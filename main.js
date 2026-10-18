@@ -1,189 +1,151 @@
 const { app, BrowserWindow, screen, ipcMain, Tray, Menu, nativeImage } = require('electron');
 const path = require('path');
 const fs = require('fs');
-
-// Where we persist save data (per-OS user data folder, not inside the app bundle)
 const SAVE_PATH = path.join(app.getPath('userData'), 'save.json');
-
+const SETTINGS_PATH = path.join(app.getPath('userData'), 'settings.json');
 const WINDOW_WIDTH = 360;
-const WINDOW_HEIGHT = 48; // taskbar-height strip
-
+const WINDOW_HEIGHT = 48;
 let mainWindow = null;
 let inventoryWindow = null;
+let settingsWindow = null;
 let tray = null;
+
+function loadJson(filePath, fallback) {
+  try {
+    return fs.existsSync(filePath) ? JSON.parse(fs.readFileSync(filePath, 'utf-8')) : fallback;
+  } catch (error) {
+    console.warn(`Could not read ${path.basename(filePath)}:`, error.message);
+    return fallback;
+  }
+}
+
+function writeJsonAtomically(filePath, value) {
+  const tempPath = `${filePath}.tmp`;
+  fs.writeFileSync(tempPath, JSON.stringify(value, null, 2), { mode: 0o600 });
+  fs.renameSync(tempPath, filePath);
+  return true;
+}
 
 function createWindow() {
   const { width: screenW, height: screenH } = screen.getPrimaryDisplay().workAreaSize;
-
   const win = new BrowserWindow({
-    width: WINDOW_WIDTH,
-    height: WINDOW_HEIGHT,
-    x: screenW - WINDOW_WIDTH - 8,      // bottom-right, nudge left of system tray
-    y: screenH - WINDOW_HEIGHT,          // sit right above the taskbar
-    frame: false,
-    transparent: true,
-    resizable: false,
-    alwaysOnTop: true,
-    skipTaskbar: true,                   // don't show ITS OWN icon in the taskbar
-    hasShadow: false,
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true,
-      nodeIntegration: false,
-    },
+    width: WINDOW_WIDTH, height: WINDOW_HEIGHT,
+    x: Math.max(0, screenW - WINDOW_WIDTH - 8), y: Math.max(0, screenH - WINDOW_HEIGHT),
+    frame: false, transparent: true, resizable: false, alwaysOnTop: true,
+    skipTaskbar: true, hasShadow: false,
+    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
   });
-
-  win.setAlwaysOnTop(true, 'screen-saver'); // stay above most windows
-  win.setIgnoreMouseEvents(true, { forward: true }); // click-through by default
+  win.setAlwaysOnTop(true, 'screen-saver');
+  win.setIgnoreMouseEvents(true, { forward: true });
   win.loadFile(path.join(__dirname, 'src', 'index.html'));
-
-  win.on('closed', () => {
-    mainWindow = null;
-  });
-
+  win.on('closed', () => { mainWindow = null; });
   mainWindow = win;
   return win;
 }
 
-// A normal, framed window - this one you're meant to click into and interact with,
-// unlike the click-through taskbar strip.
 function createInventoryWindow() {
-  if (inventoryWindow) {
-    inventoryWindow.focus();
-    return inventoryWindow;
-  }
-
+  if (inventoryWindow && !inventoryWindow.isDestroyed()) { inventoryWindow.focus(); return inventoryWindow; }
   const { width: screenW, height: screenH } = screen.getPrimaryDisplay().workAreaSize;
-  const width = 380;
-  const height = 480;
-
+  const width = 380, height = 480;
   inventoryWindow = new BrowserWindow({
-    width,
-    height,
-    x: screenW - width - 20,
-    y: screenH - height - 70, // sit just above the taskbar strip
-    frame: true,
-    resizable: false,
-    alwaysOnTop: true,
-    title: 'Inventory',
-    webPreferences: {
-      preload: path.join(__dirname, 'preload-inventory.js'),
-      contextIsolation: true,
-      nodeIntegration: false,
-    },
+    width, height, x: Math.max(0, screenW - width - 20), y: Math.max(0, screenH - height - 70),
+    frame: true, resizable: false, alwaysOnTop: true, title: 'Taskbar Hero — Inventory',
+    webPreferences: { preload: path.join(__dirname, 'preload-inventory.js'), contextIsolation: true, nodeIntegration: false }
   });
-
   inventoryWindow.setMenuBarVisibility(false);
   inventoryWindow.loadFile(path.join(__dirname, 'src', 'inventory.html'));
-
-  inventoryWindow.on('closed', () => {
-    inventoryWindow = null;
-  });
-
+  inventoryWindow.on('closed', () => { inventoryWindow = null; });
   return inventoryWindow;
 }
 
-// The taskbar strip is easy to miss (small, click-through, no close button).
-// The tray icon is the reliable entry point: Open Inventory, toggle the
-// strip's visibility, or quit the app entirely.
+function createSettingsWindow() {
+  if (settingsWindow && !settingsWindow.isDestroyed()) { settingsWindow.focus(); return settingsWindow; }
+  const { width: screenW, height: screenH } = screen.getPrimaryDisplay().workAreaSize;
+  settingsWindow = new BrowserWindow({
+    width: 390, height: 420, x: Math.max(0, screenW - 410), y: Math.max(0, screenH - 490),
+    resizable: false, alwaysOnTop: true, title: 'Taskbar Hero — Settings',
+    webPreferences: { contextIsolation: true, nodeIntegration: false }
+  });
+  settingsWindow.setMenuBarVisibility(false);
+  settingsWindow.loadFile(path.join(__dirname, 'src', 'settings.html'));
+  settingsWindow.on('closed', () => { settingsWindow = null; });
+  return settingsWindow;
+}
+
+function toggleHero() {
+  if (!mainWindow || mainWindow.isDestroyed()) { createWindow(); return; }
+  if (mainWindow.isVisible()) mainWindow.hide(); else mainWindow.show();
+}
+
 function createTray() {
   try {
     const icon = nativeImage.createFromPath(path.join(__dirname, 'assets', 'tray-icon-16.png'));
     tray = new Tray(icon);
     tray.setToolTip('Taskbar Hero');
-
-    const contextMenu = Menu.buildFromTemplate([
-      {
-        label: 'Open Inventory',
-        click: () => createInventoryWindow(),
-      },
-      {
-        label: 'Show/Hide Hero Strip',
-        click: () => {
-          if (!mainWindow) return;
-          if (mainWindow.isVisible()) mainWindow.hide();
-          else mainWindow.show();
-        },
-      },
+    tray.setContextMenu(Menu.buildFromTemplate([
+      { label: 'Open Inventory', click: createInventoryWindow },
+      { label: 'Settings', click: createSettingsWindow },
+      { label: 'Show/Hide Hero Strip', click: toggleHero },
       { type: 'separator' },
-      {
-        label: 'Quit',
-        click: () => app.quit(),
-      },
-    ]);
-
-    tray.setContextMenu(contextMenu);
-
-    // Left-click convenience: quick-toggle the strip without digging into the menu.
-    tray.on('click', () => {
-      if (!mainWindow) return;
-      if (mainWindow.isVisible()) mainWindow.hide();
-      else mainWindow.show();
-    });
+      { label: 'Quit', click: () => app.quit() }
+    ]));
+    tray.on('click', toggleHero);
   } catch (err) {
-    // Some Linux desktop environments have no system tray host available -
-    // don't let that crash the whole app, just log it and move on. The
-    // inventory bag icon on the strip still works as a fallback entry point.
     console.warn('Tray icon unavailable:', err.message);
   }
 }
 
-// --- Toggle click-through on the main strip ---
 ipcMain.on('set-ignore-mouse', (_evt, ignore) => {
-  if (mainWindow) mainWindow.setIgnoreMouseEvents(ignore, { forward: true });
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.setIgnoreMouseEvents(Boolean(ignore), { forward: true });
 });
-
-// --- Inventory window lifecycle ---
-ipcMain.on('open-inventory', () => {
-  createInventoryWindow();
-});
-
-// Inventory window asks for fresh data; we relay the request to the game
-// window, which owns the live GameState in memory.
+ipcMain.on('open-inventory', createInventoryWindow);
+ipcMain.on('open-settings', createSettingsWindow);
 ipcMain.on('request-inventory-sync', () => {
-  if (mainWindow) mainWindow.webContents.send('provide-inventory-sync');
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('provide-inventory-sync');
 });
-
-// Game window responds with serialized data; relay it onward to the inventory window.
 ipcMain.on('inventory-sync-data', (_evt, data) => {
-  if (inventoryWindow) inventoryWindow.webContents.send('inventory-sync-data', data);
+  if (inventoryWindow && !inventoryWindow.isDestroyed()) inventoryWindow.webContents.send('inventory-sync-data', data);
 });
-
-// Inventory window requests an equip action; relay to the game window, which
-// actually mutates the live Hero/GameState objects.
 ipcMain.on('equip-item', (_evt, payload) => {
-  if (mainWindow) mainWindow.webContents.send('equip-item', payload);
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('equip-item', payload);
 });
-
-// Inventory window requests a hero recruit; relay to the game window, which
-// owns gold/party and does the actual "can afford it" check + addHero() call.
 ipcMain.on('recruit-hero', (_evt, classId) => {
-  if (mainWindow) mainWindow.webContents.send('recruit-hero', classId);
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('recruit-hero', classId);
 });
 
-// --- Save/load handlers (main process owns disk access) ---
 ipcMain.handle('save-game', (_evt, data) => {
-  fs.writeFileSync(SAVE_PATH, JSON.stringify(data, null, 2));
-  return true;
-});
-
-ipcMain.handle('load-game', () => {
-  if (!fs.existsSync(SAVE_PATH)) return null;
-  try {
-    return JSON.parse(fs.readFileSync(SAVE_PATH, 'utf-8'));
-  } catch {
-    return null;
+  if (!data || typeof data !== 'object' || !Array.isArray(data.party) || !Array.isArray(data.inventory)) {
+    throw new TypeError('Invalid game save payload');
   }
+  return writeJsonAtomically(SAVE_PATH, data);
+});
+ipcMain.handle('load-game', () => loadJson(SAVE_PATH, null));
+ipcMain.handle('load-settings', () => loadJson(SETTINGS_PATH, {
+  mute: false, volume: 0.4, alwaysOnTop: true, clickThrough: true, autosaveSeconds: 30
+}));
+ipcMain.handle('save-settings', (_evt, settings) => {
+  if (!settings || typeof settings !== 'object') throw new TypeError('Invalid settings payload');
+  const safe = {
+    mute: Boolean(settings.mute),
+    volume: Math.min(1, Math.max(0, Number(settings.volume) || 0)),
+    alwaysOnTop: settings.alwaysOnTop !== false,
+    clickThrough: settings.clickThrough !== false,
+    autosaveSeconds: Math.min(300, Math.max(10, Number(settings.autosaveSeconds) || 30))
+  };
+  const saved = writeJsonAtomically(SETTINGS_PATH, safe);
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.setAlwaysOnTop(safe.alwaysOnTop, 'screen-saver');
+    mainWindow.setIgnoreMouseEvents(safe.clickThrough, { forward: true });
+  }
+  return saved;
 });
 
 app.whenReady().then(() => {
   createWindow();
   createTray();
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-  });
+  app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
 });
-
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+app.on('before-quit', () => {
+  if (tray) { tray.destroy(); tray = null; }
 });
+app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
