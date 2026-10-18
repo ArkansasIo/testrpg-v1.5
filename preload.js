@@ -1,24 +1,17 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
+const SETTINGS_KEY = 'settings';
+
 contextBridge.exposeInMainWorld('taskbarHero', {
   saveGame: (data) => ipcRenderer.invoke('save-game', data),
   loadGame: () => ipcRenderer.invoke('load-game'),
-  setIgnoreMouse: (ignore) => ipcRenderer.send('set-ignore-mouse', ignore),
-
+  loadSettings: () => ipcRenderer.invoke('load-settings'),
+  saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
+  setIgnoreMouse: (ignore) => ipcRenderer.send('set-ignore-mouse', Boolean(ignore)),
   openInventory: () => ipcRenderer.send('open-inventory'),
-
-  // The inventory window (via main) asks us for fresh data - we respond by
-  // pushing serialized state back out on 'inventory-sync-data'.
+  openSettings: () => ipcRenderer.send('open-settings'),
   onProvideInventorySync: (callback) => ipcRenderer.on('provide-inventory-sync', callback),
   sendInventorySync: (data) => ipcRenderer.send('inventory-sync-data', data),
-
-  // The inventory window asks us to equip something - we own the live Hero
-  // objects, so we perform the mutation here.
-  onEquipItem: (callback) =>
-    ipcRenderer.on('equip-item', (_evt, payload) => callback(payload)),
-
-  // The inventory window asks us to recruit a hero - we own gold/party, so
-  // we do the affordability check and the actual addHero() call here.
-  onRecruitHero: (callback) =>
-    ipcRenderer.on('recruit-hero', (_evt, classId) => callback(classId)),
+  onEquipItem: (callback) => ipcRenderer.on('equip-item', (_evt, payload) => callback(payload)),
+  onRecruitHero: (callback) => ipcRenderer.on('recruit-hero', (_evt, classId) => callback(classId))
 });
