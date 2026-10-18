@@ -64,7 +64,7 @@ function createSettingsWindow() {
   settingsWindow = new BrowserWindow({
     width: 390, height: 420, x: Math.max(0, screenW - 410), y: Math.max(0, screenH - 490),
     resizable: false, alwaysOnTop: true, title: 'Taskbar Hero — Settings',
-    webPreferences: { contextIsolation: true, nodeIntegration: false }
+    webPreferences: { preload: path.join(__dirname, 'preload-settings.js'), contextIsolation: true, nodeIntegration: false }
   });
   settingsWindow.setMenuBarVisibility(false);
   settingsWindow.loadFile(path.join(__dirname, 'src', 'settings.html'));
