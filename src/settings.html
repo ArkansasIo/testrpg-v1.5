@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';">
+  <title>Taskbar Hero — Settings</title>
+  <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+  <header><h1>Settings</h1><p>Customize the companion experience.</p></header>
+  <main>
+    <label class="toggle"><span>Mute sound effects</span><input id="mute" type="checkbox"></label>
+    <label><span>Sound volume</span><input id="volume" type="range" min="0" max="1" step="0.05"></label>
+    <label class="toggle"><span>Keep hero above windows</span><input id="alwaysOnTop" type="checkbox"></label>
+    <label class="toggle"><span>Click-through by default</span><input id="clickThrough" type="checkbox"></label>
+    <label><span>Autosave interval (seconds)</span><input id="autosaveSeconds" type="number" min="10" max="300" step="5"></label>
+    <div class="actions"><button id="save">Save settings</button><span id="status" role="status"></span></div>
+  </main>
+  <script src="settings.js"></script>
+</body>
+</html>
