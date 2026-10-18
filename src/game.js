@@ -160,7 +160,7 @@ async function main() {
   const coinBurst = new CoinBurstManager(app.stage);
   const sound = new SoundManager(0.4);
   // Apply saved audio preferences before the first combat event fires.
-  window.taskbarHero.loadSettings().then((settings) => {
+  window.taskbarHero.loadSettings?.().then((settings) => {
     sound.setMuted(Boolean(settings.mute));
     sound.setVolume(Math.max(0, Math.min(1, Number(settings.volume ?? 0.4))));
   }).catch((error) => console.warn('Could not load audio settings:', error));
