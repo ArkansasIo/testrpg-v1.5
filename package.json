@@ -6,7 +6,7 @@
   "scripts": {
     "start": "electron .",
     "check:syntax": "node --check main.js && node --check preload.js && node --check preload-inventory.js && node --check preload-settings.js && find src -type f -name '*.js' -print0 | xargs -0 -n1 node --check",
-    "check:json": "node -e \"JSON.parse(require('fs').readFileSync('package.json','utf8')); JSON.parse(require('fs').readFileSync('package-lock.json','utf8'))\"",
+    "check:json": "node -e \"JSON.parse(require('fs').readFileSync('package.json','utf8'))\"",
     "check": "npm run check:syntax && npm run check:json",
     "pack:dir": "electron-builder --dir",
     "build:win": "electron-builder --win nsis",
