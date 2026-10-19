@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "roles": [
+    {"id":"slime","baseStats":{"hp":45,"atk":6,"defense":2,"speed":5},"abilities":["slam"]},
+    {"id":"skeleton","baseStats":{"hp":70,"atk":10,"defense":6,"speed":7},"abilities":["slash"]},
+    {"id":"skeleton-knight","baseStats":{"hp":120,"atk":14,"defense":12,"speed":5},"abilities":["guard","heavy-slash"]},
+    {"id":"mage","baseStats":{"hp":60,"atk":18,"defense":4,"speed":8},"abilities":["firebolt","frostbolt"]},
+    {"id":"boss","baseStats":{"hp":500,"atk":30,"defense":18,"speed":6},"abilities":["heavy-strike","enrage","area-attack"]}
+  ]
+}
