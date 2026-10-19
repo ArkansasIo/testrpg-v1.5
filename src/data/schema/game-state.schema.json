@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "testrpg://schemas/game-state.schema.json",
+  "type": "object",
+  "required": ["version", "stage", "gold", "party", "inventory", "updatedAt"],
+  "properties": {
+    "version": {"type":"integer","minimum":1},
+    "stage": {"type":"integer","minimum":1},
+    "gold": {"type":"integer","minimum":0},
+    "xp": {"type":"integer","minimum":0},
+    "party": {"type":"array","maxItems":4,"items":{"$ref":"hero.schema.json"}},
+    "inventory": {"type":"array","maxItems":200,"items":{"$ref":"item.schema.json"}},
+    "defeatedEnemies": {"type":"integer","minimum":0},
+    "settings": {"type":"object"},
+    "updatedAt": {"type":"integer","minimum":0}
+  },
+  "additionalProperties": false
+}
