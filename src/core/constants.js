@@ -1,0 +1,13 @@
+export const GAME_VERSION = '1.5.0';
+export const SAVE_VERSION = 1;
+export const MAX_PARTY_SIZE = 4;
+export const MAX_INVENTORY_SIZE = 200;
+export const MAX_LEVEL = 100;
+export const MAX_STAGE = 10000;
+export const BOSS_INTERVAL = 5;
+export const MAX_WAVE_SIZE = 4;
+export const DEFAULT_TICK_MS = 1000;
+export const AUTOSAVE_INTERVAL_MS = 30000;
+export const RARITY_ORDER = ['common','uncommon','rare','epic','legendary','mythic','ancient','divine','celestial','prismatic'];
+export const EQUIPMENT_SLOTS = ['weapon','armor','trinket'];
+export const DAMAGE_TYPES = ['physical','fire','ice','lightning','poison','arcane','holy','shadow'];
