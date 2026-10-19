@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "biomes": [
+    {"id":"forest","levels":[1,20],"encounters":["slime","skeleton","wolf"],"resources":["wood","herb","ore"]},
+    {"id":"crypt","levels":[10,35],"encounters":["skeleton","skeleton-knight","wraith"],"resources":["bone","iron","herb"]},
+    {"id":"cavern","levels":[20,50],"encounters":["bat","spider","golem"],"resources":["ore","crystal","coal"]},
+    {"id":"ruins","levels":[30,70],"encounters":["cultist","guardian","mage"],"resources":["relic","stone","crystal"]},
+    {"id":"volcanic","levels":[50,100],"encounters":["fire-elemental","lava-beast","dragon"],"resources":["obsidian","sulfur","dragon-scale"]},
+    {"id":"frost","levels":[60,100],"encounters":["ice-wolf","frost-giant","lich"],"resources":["ice-crystal","silver","frost-herb"]}
+  ]
+}
