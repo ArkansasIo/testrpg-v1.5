@@ -1,0 +1,14 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"testrpg://schemas/hero.schema.json",
+  "type":"object",
+  "required":["id","classId","name","level","xp","hp","maxHp","stats","abilities","equipment"],
+  "properties":{
+    "id":{"type":"string"},"classId":{"type":"string"},"name":{"type":"string"},
+    "level":{"type":"integer","minimum":1},"xp":{"type":"integer","minimum":0},
+    "hp":{"type":"integer","minimum":0},"maxHp":{"type":"integer","minimum":1},
+    "stats":{"type":"object"},"abilities":{"type":"array","items":{"type":"object"}},
+    "equipment":{"type":"object","properties":{"weapon":{"type":["object","null"]},"armor":{"type":["object","null"]},"trinket":{"type":["object","null"]}}}
+  },
+  "additionalProperties":false
+}
