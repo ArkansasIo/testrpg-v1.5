@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "modules": [
+    {"id":"core","path":"src/core","submodules":["constants","math","rng","validation"]},
+    {"id":"combat","path":"src/modules/combat","submodules":["resolver","threat","actions"]},
+    {"id":"progression","path":"src/modules/progression","submodules":["xp","levels","skills","talents"]},
+    {"id":"inventory","path":"src/modules/inventory","submodules":["stacks","capacity","currency"]},
+    {"id":"equipment","path":"src/modules/equipment","submodules":["slots","requirements","sets"]},
+    {"id":"loot","path":"src/modules/loot","submodules":["tables","rarity","affixes","generator"]},
+    {"id":"quests","path":"src/modules/quests","submodules":["objectives","rewards","state"]},
+    {"id":"dungeons","path":"src/modules/dungeons","submodules":["floors","encounters","bosses","biomes"]},
+    {"id":"crafting","path":"src/modules/crafting","submodules":["recipes","materials","stations"]},
+    {"id":"skills","path":"src/modules/skills","submodules":["trees","nodes","ranks"]},
+    {"id":"ai","path":"src/modules/ai","submodules":["states","targeting","decisions"]},
+    {"id":"save","path":"src/modules/save","submodules":["serializer","versioning","migration"]}
+  ],
+  "collections": [
+    "party[]","inventory[]","equipment[]","abilities[]","enemies[]","waves[]","floors[]","encounters[]","objectives[]","ingredients[]","skillNodes[]","prerequisites[]","tags[]","effects[]"
+  ],
+  "maps": [
+    "stats{}","equipment{}","skillRanks{}","rewards{}","settings{}"
+  ]
+}
