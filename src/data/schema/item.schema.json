@@ -1,0 +1,18 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"testrpg://schemas/item.schema.json",
+  "type":"object",
+  "required":["id","label","slot","rarity","stats"],
+  "properties":{
+    "id":{"type":"string","minLength":1},
+    "label":{"type":"string","minLength":1},
+    "slot":{"enum":["weapon","armor","trinket"]},
+    "rarity":{"enum":["common","uncommon","rare","epic","legendary","mythic","ancient","divine","celestial","prismatic"]},
+    "level":{"type":"integer","minimum":1},
+    "allowedClasses":{"type":"array","items":{"type":"string"}},
+    "stats":{"type":"object","additionalProperties":{"type":"number"}},
+    "value":{"type":"integer","minimum":0},
+    "stackable":{"type":"boolean"}
+  },
+  "additionalProperties":false
+}
