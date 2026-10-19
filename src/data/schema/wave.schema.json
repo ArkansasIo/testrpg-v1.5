@@ -1,0 +1,13 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"testrpg://schemas/wave.schema.json",
+  "type":"object",
+  "required":["stage","enemies","boss"],
+  "properties":{
+    "stage":{"type":"integer","minimum":1},
+    "boss":{"type":"boolean"},
+    "seed":{"type":"integer","minimum":0},
+    "enemies":{"type":"array","items":{"type":"object","required":["id","role","stage","level","hp","maxHp"]}}
+  },
+  "additionalProperties":false
+}
